@@ -679,4 +679,6 @@ Combines the strengths of both:
 |                             | Polynomial   | **98.20%**    | `C=1`, `d=2`, `γ=0.1`         |
 |                             | RBF          | 98.12%        | `C=10`, `γ=0.01`              |
 | **Task 3: Mixed Kernel**    | Linear + RBF | 97.16%        | `C=0.1`, `γ=0.01` or `0.1`    |
+
+
 The **tuned polynomial kernel** achieves the highest accuracy (98.2%), likely due to its ability to model complex nonlinear patterns, but only when hyperparameters such as degree and gamma are properly selected. The **RBF kernel** performs nearly as well (98.12%) and demonstrates strong generalization with relatively robust performance across different parameter settings. The **custom mixed kernel**, which combines linear and RBF components, also performs strongly (97.16%) and shows robustness to gamma values, making it a flexible option for capturing both global and local patterns. In contrast, the **default polynomial kernel** performs poorly (34.68%) without parameter tuning, emphasizing the critical role of hyperparameter selection in kernel-based models.
