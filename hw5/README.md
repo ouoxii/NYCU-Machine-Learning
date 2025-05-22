@@ -11,8 +11,8 @@ data = np.loadtxt('./data/input.data')
 print(data.shape)
 print(data[:5])
 
-X_train = data[:, 0].reshape(-1, 1) 
-y_train = data[:, 1].reshape(-1, 1)   
+X_train = data[:, 0].reshape(-1, 1)
+y_train = data[:, 1].reshape(-1, 1)
 ```
 
 Using the `numpy.loadtxt()` function to load the training data from the `input.data` file. Each data point consists of $(X_i, Y_i)$, where $X_i$​ represents the input location, and $Y_i$ is the observed value at that location with added random noise.
@@ -30,7 +30,7 @@ $$
 import numpy as np
 import matplotlib.pyplot as plt
 
-# Rational Quadratic kernel 
+# Rational Quadratic kernel
 def rational_quadratic_kernel(X1, X2, length_scale=1.0, alpha=1.0, variance=1.0):
     sqdist = np.sum(X1**2, axis=1).reshape(-1,1) + np.sum(X2**2, axis=1) - 2 * np.dot(X1, X2.T)
     return variance * (1 + sqdist / (2 * alpha * length_scale**2)) ** (-alpha)
@@ -40,13 +40,13 @@ def rational_quadratic_kernel(X1, X2, length_scale=1.0, alpha=1.0, variance=1.0)
 In the expression, $|\mathbf{x} - \mathbf{x}'|^2$ represents the squared distance between the input points $\mathbf{x}$ and $\mathbf{x}'$. The other three hyperparameters are interpreted as follows:
 
 - $\ell$ (`length_scale`): Controls how distance between data points affects similarity. A larger value means the model assumes longer-range correlations (smoother behavior).
-    
+
 - $\alpha$: Determines the overall shape of the kernel, controlling how quickly similarity decays with distance. As $\alpha$ increases, the kernel approaches the Radial Basis Function (RBF) kernel.
-    
+
 - $\sigma^2$ (`variance`): Controls the overall scale of output variations.
 
 ---
-#### Gaussian Process Regression 
+#### Gaussian Process Regression
 
 ##### What is a Gaussian Process?
 
@@ -65,7 +65,7 @@ By applying the conditional properties of the multivariate Gaussian distribution
     \mu(X_*) = K(X_*, X) \, K(X, X)^{-1} \, y
     $$
 - **Predictive covariance**: the uncertainty of the prediction at each test point
-    
+
     $$
     \Sigma(X_*) = K(X_*, X_*) - K(X_*, X) \, K(X, X)^{-1} \, K(X, X_*)^\top
     $$
@@ -73,7 +73,7 @@ By applying the conditional properties of the multivariate Gaussian distribution
 $K(\cdot, \cdot)$ denotes the **kernel matrix** that computes similarity between inputs using the chosen kernel function.
 
 ```python
-# Gaussian Process Regression 
+# Gaussian Process Regression
 def gaussian_process(X_train, y_train, X_test, length_scale=1.0, alpha=1.0, variance=1.0, noise=1e-10):
 
     X_train = np.asarray(X_train).reshape(-1, 1)
@@ -100,12 +100,12 @@ In the `gaussian_process()` function, I compute the following using the Rational
 - `K_s`: the kernel matrix between training and test points, denoted as $K(X, X_*)$.
 
 - `K_{ss}`: the kernel matrix between test points, denoted as $K(X_*, X_*)$.
-    
+
 
 Then, using the closed-form Gaussian Process formulas, compute:
 
 - `mu`: the predicted mean at each test point, derived through linear algebra.
-    
+
 - `cov`: the predictive covariance matrix for the test points, which reflects the model's confidence (or uncertainty) across different input locations.
 
 ```python
@@ -164,11 +164,11 @@ $$
 Where:
 
 - $\mathbf{C}_{\boldsymbol{\theta}} = K_{\theta}(X, X) + \sigma^2 I$ is the covariance matrix of the training data, combining the kernel and observation noise.
-    
+
 - The first term penalizes **model complexity** (the larger the determinant, the more flexible the model).
-    
+
 - The second term measures **data fit** (how well the model explains the data).
-    
+
 - The third term is a constant normalization factor.
 
 
@@ -267,32 +267,32 @@ The following hyperparameters were obtained from the optimization process:
 
 ### Plot 1: Initial Hyperparameters
 
-- **Behavior**:  
+- **Behavior**:
     The prediction line is very **wiggly and fluctuates sharply**, trying to closely fit the noise in the training data.
-    
-- **Confidence Region**:  
+
+- **Confidence Region**:
     The **95% confidence interval** is wide and erratic in some regions, particularly far from training points. This suggests **high uncertainty** and possibly **overfitting** to noisy data.
-    
-- **Interpretation**:  
+
+- **Interpretation**:
     A small `length_scale` causes the model to assume **short-range dependencies**, leading it to react aggressively to local variations. Also, a small `alpha` gives the Rational Quadratic kernel heavier tails, making the model more sensitive to outliers.
-    
+
 
 ---
 
 ### Plot 2: Optimized Hyperparameters
 
-- **Behavior**:  
+- **Behavior**:
     The prediction curve is **smoother** and fits the **overall trend** of the data more realistically. It avoids overreacting to noise.
-    
-- **Confidence Region**:  
+
+- **Confidence Region**:
     The shaded region representing the 95% confidence interval is more **stable and narrower**, especially near training points, reflecting increased confidence in those predictions.
-    
+
 - **Interpretation**:
-    
+
     - A **larger `length_scale`** implies the model assumes that outputs vary more smoothly with inputs.
-        
+
     - A **very large `alpha`** (~4363) causes the Rational Quadratic kernel to approximate an RBF kernel, resulting in **stable and localized similarity**.
-        
+
     - The **optimized `variance`** and **noise level** allow the model to balance between fitting the signal and ignoring noise.
 
 ### Conclusion
@@ -329,7 +329,7 @@ $$
 - No nonlinear transformation — performs well when data is linearly separable.
 - Fast and interpretable.
 - **Parameter**:
-    
+
     - `-c`: Penalty parameter $C$, balancing margin size and classification error.
 ##### ② Polynomial Kernel
 
@@ -339,17 +339,17 @@ $$
 
 
 - Captures interactions between features.
-    
+
 - Can model curved decision boundaries.
-    
+
 - **Parameters**:
-    
+
     - `-d`: Degree $d$ of the polynomial.
-        
+
     - `-g`: Gamma $\gamma$, controls scaling of input dot products.
-        
+
     - `-r`: Coefficient $r$, adjusts balance between lower and higher-degree terms.
-        
+
     - `-c`: Penalty parameter $C$.
 ##### ③ RBF Kernel
 
@@ -393,13 +393,13 @@ Implementing a **Grid Search** strategy combined with **5-fold Cross-Validation*
 In this code, we define a search space using `param_grid`:
 
 - **Linear kernel**: Search over penalty parameter `C`.
-    
+
 - **Polynomial kernel**: Search over `degree`, `C`, and `gamma`.
-    
+
 - **RBF kernel**: Search over `gamma` and `C`.
-    
+
 - **Mixed kernel** (Linear + RBF): Search over `gamma` and `C`.
-    
+
 
 ---
 
@@ -410,7 +410,7 @@ In this code, we define a search space using `param_grid`:
 In this implementation, use:
 
 - `libsvm`'s built-in `-v 5` flag for automatic **5-fold CV** for linear, polynomial, and RBF kernels.
-    
+
 - A **manual CV function** for the **custom kernel**, because `libsvm` does not natively support cross-validation with precomputed kernels (`-t 4`).
 
 This function performs **grid search with cross-validation** to find the best parameter set for a specified kernel.
@@ -536,7 +536,7 @@ def add_index_column(K):
 ### 3. **Manual Cross-Validation for Custom Kernels**
 
 Since LIBSVM’s built-in cross-validation (`-v <n>`) **does not support precomputed kernels**, we manually implement **k-fold cross-validation**:
-        
+
 ```python
 def cross_validate_custom_kernel(K_full, y, C, gamma, num_folds=5):
     n = len(y)
@@ -578,7 +578,7 @@ def cross_validate_custom_kernel(K_full, y, C, gamma, num_folds=5):
 ```
 
 ## 2. Experiments (20%)
- 
+
 ### Task 1 -  Kernel Comparison (Default Parameters)
 
 | Kernel Type | Accuracy                                       |
@@ -588,7 +588,7 @@ def cross_validate_custom_kernel(K_full, y, C, gamma, num_folds=5):
 | RBF         | <span style="background:#fff88f">95.32%</span> |
 
 - **Linear and RBF kernels** perform very well by default, suggesting that the dataset is either linearly separable or has local structures that RBF can capture.
-    
+
 - **Polynomial kernel (default)** performs poorly (34.68%), likely due to unsuitable default hyperparameters (e.g., high-degree polynomial or unscaled features). This shows that polynomial kernels are **very sensitive to parameter settings**.
 
 ### Task 2
@@ -601,7 +601,7 @@ def cross_validate_custom_kernel(K_full, y, C, gamma, num_folds=5):
 | 1   | 96.3%                                          |
 | 10  | 96.1%                                          |
 - Smaller `C = 0.1` gave the best result, meaning the model benefits from **wider margin** and **less emphasis on misclassification**.
-    
+
 - Higher `C` values may lead to overfitting on training noise.
 #### Polynomial Kernel
 
@@ -621,9 +621,9 @@ def cross_validate_custom_kernel(K_full, y, C, gamma, num_folds=5):
 | 3      | 10  | 0.01  | 97.72%                                        |
 | 3      | 10  | 0.1   | 97.6%                                         |
 - After tuning, **polynomial kernel becomes the best performer** (98.2%).
-    
+
 - Low-degree polynomials (especially degree 2) with well-scaled gamma values work well, capturing **quadratic interactions** in data without overfitting.
-    
+
 - Degree 3 gives slightly lower performance, suggesting additional complexity doesn’t help much.
 
 #### RBF kernel
@@ -637,18 +637,18 @@ def cross_validate_custom_kernel(K_full, y, C, gamma, num_folds=5):
 | 0.1   | 1   | 92.02%                                         |
 | 0.1   | 10  | 92.4%                                          |
 - RBF performs best with **small gamma (0.01)** and **large C (10)**:
-    
+
     - Low gamma ⇒ smooth, wide influence per point.
-        
+
     - High C ⇒ allows the model to correct more misclassified points.
-        
+
 - High gamma (0.1) leads to overfitting and **poor generalization** (e.g., 53.34% with C=0.1).
 ### Task 3
 
 Combines the strengths of both:
 
 - **Linear component**: captures global, linear trends.
-    
+
 - **RBF component**: captures local, nonlinear variations.
 
 | c   | gamma | Accuracy                                      |
@@ -661,11 +661,11 @@ Combines the strengths of both:
 | 10  | 0.1   | 96.72                                         |
 
 - The **best accuracy (97.16%)** is achieved when **C = 0.1** with **either gamma = 0.01 or 0.1**, indicating the model benefits from:
-    
+
     - **Lower regularization (C)** → allows for a larger margin and better generalization.
-        
+
     - The **mixed kernel is robust to gamma** within this tested range.
-        
+
 - Larger values of **C = 1 or 10** slightly reduce performance, suggesting a risk of **overfitting** due to higher penalty on misclassified points.
 
 ## 3. Observation and Discussion (10%)
@@ -679,4 +679,7 @@ Combines the strengths of both:
 |                             | Polynomial   | **98.20%**    | `C=1`, `d=2`, `γ=0.1`         |
 |                             | RBF          | 98.12%        | `C=10`, `γ=0.01`              |
 | **Task 3: Mixed Kernel**    | Linear + RBF | 97.16%        | `C=0.1`, `γ=0.01` or `0.1`    |
+
+
+
 The **tuned polynomial kernel** achieves the highest accuracy (98.2%), likely due to its ability to model complex nonlinear patterns, but only when hyperparameters such as degree and gamma are properly selected. The **RBF kernel** performs nearly as well (98.12%) and demonstrates strong generalization with relatively robust performance across different parameter settings. The **custom mixed kernel**, which combines linear and RBF components, also performs strongly (97.16%) and shows robustness to gamma values, making it a flexible option for capturing both global and local patterns. In contrast, the **default polynomial kernel** performs poorly (34.68%) without parameter tuning, emphasizing the critical role of hyperparameter selection in kernel-based models.
