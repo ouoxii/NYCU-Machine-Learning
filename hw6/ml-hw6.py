@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import time
 import os
 import imageio
 from PIL import Image
@@ -228,6 +229,7 @@ def run_all_configs(image_path, gamma_s, gamma_c, n_clusters_list, init_methods,
                 if mode == 'kernel':
                     print(f"\n[Kernel K-Means] clusters={n_clusters}, init={init_method}")
                     try:
+                        start_time = time.time()
                         kernel_kmeans_pipeline(
                             image_path=image_path,
                             n_clusters=n_clusters,
@@ -235,12 +237,15 @@ def run_all_configs(image_path, gamma_s, gamma_c, n_clusters_list, init_methods,
                             gamma_c=gamma_c,
                             init_method=init_method
                         )
+                        elapsed = time.time() - start_time
+                        print(f"[Kernel K-Means] Time taken: {elapsed:.2f} seconds")
                     except Exception as e:
                         print(f"Error in kernel_kmeans_pipeline: {e}")
 
                 elif mode == 'spectral':
                     for lap_method in laplacian_methods:
                         print(f"\n[Spectral Clustering] clusters={n_clusters}, init={init_method}, laplacian={lap_method}")
+                        start_time = time.time()
                         try:
                             spectral_clustering_pipeline(
                                 image_path=image_path,
@@ -250,6 +255,8 @@ def run_all_configs(image_path, gamma_s, gamma_c, n_clusters_list, init_methods,
                                 method=lap_method,
                                 init_method=init_method
                             )
+                            elapsed = time.time() - start_time
+                            print(f"[Spectral Clustering] Time taken: {elapsed:.2f} seconds")
                         except Exception as e:
                             print(f"Error in spectral_clustering_pipeline: {e}")
 
