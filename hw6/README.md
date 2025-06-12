@@ -504,15 +504,15 @@ To observe how well-separated the clusters are in the spectral embedding space (
 |            | spectral clustering (normalized)                                                  | spectral clustering (ratio)                                                  |
 | ---------- | --------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
 |            | random                                                                            | random                                                                       |
-| 2 clusters | ![](../eigenspace_vis/image1_spectral_normalized_random_2clusters_eigenspace.png) | ![](../eigenspace_vis/image1_spectral_ratio_random_2clusters_eigenspace.png) |
-| 3 clusters | ![](../eigenspace_vis/image1_spectral_normalized_random_3clusters_eigenspace.png) | ![](../eigenspace_vis/image1_spectral_ratio_random_3clusters_eigenspace.png) |
+| 2 clusters | ![](./eigenspace_vis/image1_spectral_normalized_random_2clusters_eigenspace.png) | ![](./eigenspace_vis/image1_spectral_ratio_random_2clusters_eigenspace.png) |
+| 3 clusters | ![](./eigenspace_vis/image1_spectral_normalized_random_3clusters_eigenspace.png) | ![](./eigenspace_vis/image1_spectral_ratio_random_3clusters_eigenspace.png) |
 
 
 |            | spectral clustering (normalized)                                                    | spectral clustering (ratio)                                                    |
 | ---------- | ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
 |            | kmeans++                                                                            | kmeans++                                                                       |
-| 2 clusters | ![](../eigenspace_vis/image1_spectral_normalized_kmeans++_2clusters_eigenspace.png) | ![](../eigenspace_vis/image1_spectral_ratio_kmeans++_2clusters_eigenspace.png) |
-| 3 clusters | ![](../eigenspace_vis/image1_spectral_normalized_kmeans++_3clusters_eigenspace.png) | ![](../eigenspace_vis/image1_spectral_ratio_kmeans++_3clusters_eigenspace.png) |
+| 2 clusters | ![](./eigenspace_vis/image1_spectral_normalized_kmeans++_2clusters_eigenspace.png) | ![](./eigenspace_vis/image1_spectral_ratio_kmeans++_2clusters_eigenspace.png) |
+| 3 clusters | ![](./eigenspace_vis/image1_spectral_normalized_kmeans++_3clusters_eigenspace.png) | ![](./eigenspace_vis/image1_spectral_ratio_kmeans++_3clusters_eigenspace.png) |
 
 | Aspect                  | Spectral (Normalized)          | Spectral (Ratio)                   |
 | ----------------------- | ------------------------------ | ---------------------------------- |
@@ -530,14 +530,14 @@ image2
 |            | spectral clustering (normalized)                                                  | spectral clustering (ratio)                                                  |
 | ---------- | --------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
 |            | random                                                                            | random                                                                       |
-| 2 clusters | ![](../eigenspace_vis/image2_spectral_normalized_random_2clusters_eigenspace.png) | ![](../eigenspace_vis/image2_spectral_ratio_random_2clusters_eigenspace.png) |
-| 3 clusters | ![](../eigenspace_vis/image2_spectral_normalized_random_3clusters_eigenspace.png) | ![](../eigenspace_vis/image2_spectral_ratio_random_3clusters_eigenspace.png) |
+| 2 clusters | ![](./eigenspace_vis/image2_spectral_normalized_random_2clusters_eigenspace.png) | ![](./eigenspace_vis/image2_spectral_ratio_random_2clusters_eigenspace.png) |
+| 3 clusters | ![](./eigenspace_vis/image2_spectral_normalized_random_3clusters_eigenspace.png) | ![](./eigenspace_vis/image2_spectral_ratio_random_3clusters_eigenspace.png) |
 
 |            | spectral clustering (normalized)                                                    | spectral clustering (ratio)                                                    |
 | ---------- | ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
 |            | kmeans++                                                                            | kmeans++                                                                       |
-| 2 clusters | ![](../eigenspace_vis/image2_spectral_normalized_kmeans++_2clusters_eigenspace.png) | ![](../eigenspace_vis/image2_spectral_ratio_kmeans++_2clusters_eigenspace.png) |
-| 3 clusters | ![](../eigenspace_vis/image2_spectral_normalized_kmeans++_3clusters_eigenspace.png) | ![](../eigenspace_vis/image2_spectral_ratio_kmeans++_3clusters_eigenspace.png) |
+| 2 clusters | ![](./eigenspace_vis/image2_spectral_normalized_kmeans++_2clusters_eigenspace.png) | ![](./eigenspace_vis/image2_spectral_ratio_kmeans++_2clusters_eigenspace.png) |
+| 3 clusters | ![](./eigenspace_vis/image2_spectral_normalized_kmeans++_3clusters_eigenspace.png) | ![](./eigenspace_vis/image2_spectral_ratio_kmeans++_3clusters_eigenspace.png) |
 
 | Setting              | Normalized Laplacian                 | Ratio Laplacian                                |
 | -------------------- | ------------------------------------ | ---------------------------------------------- |
