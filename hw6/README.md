@@ -35,7 +35,7 @@
 
 ## 1. Code with detailed explanations (30%)
 
-i. Part1 (kernel k-means 5%, normalized cut 5%, ratio cut 5%) 
+i. Part1 (kernel k-means 5%, normalized cut 5%, ratio cut 5%)
 
 ```python
 def load_image(image_path):
@@ -89,7 +89,7 @@ $$
 $$
 Expanding this using kernel functions:
 $$
-= \underbrace{\mathbf{k}(x_j, x_j)}_{self similarity} - \frac{2}{|C_k|} \sum_{n} \alpha_{kn} \mathbf{k}(x_j, x_n) 
+= \underbrace{\mathbf{k}(x_j, x_j)}_{self similarity} - \frac{2}{|C_k|} \sum_{n} \alpha_{kn} \mathbf{k}(x_j, x_n)
 + \frac{1}{|C_k|^2} \sum_{p} \sum_{q} \alpha_{kp} \alpha_{kq} \mathbf{k}(x_p, x_q)
 $$
 - $\phi(x)$: The high-dimensional mapping of $x$
@@ -286,14 +286,14 @@ def spectral_clustering_pipeline(image_path, n_clusters, gamma_s, gamma_c, metho
 ```
 
 1. **Load image** and extract its RGB data and shape.
-2. **Compute the kernel matrix** $K$ using both spatial and color similarities.    
+2. **Compute the kernel matrix** $K$ using both spatial and color similarities.
 3. **Construct the graph Laplacian** (`L`) using ratio or normalized method.
 4. **Compute eigenvectors** of the Laplacian and extract the top `n_clusters` ones as embedding matrix `U`.
 5. **Apply K-Means** in the eigenspace to cluster pixels.
 6. **Save results** as a `.gif` (animated clustering) and `.png` (final output).
 7. **Visualize the eigenspace** (2D or 3D scatter plot of eigenvectors with cluster colors)
 
-### Part4: Experiments on the coordinates in the eigenspace 
+### Part4: Experiments on the coordinates in the eigenspace
 
 visualize the coordinates of each data point (e.g., image pixel) in that eigenspace, colored by its final cluster assignment.
 
@@ -445,8 +445,8 @@ Features:
 if __name__ == "__main__":
     gamma_s = 0.001
     gamma_c = 0.001
-    n_clusters_list = [2, 3, 4] # Part2: Try more clusters (5%) 
-    init_methods = ['random', 'kmeans++'] # Part3: Try different initializations. (5%) 
+    n_clusters_list = [2, 3, 4] # Part2: Try more clusters (5%)
+    init_methods = ['random', 'kmeans++'] # Part3: Try different initializations. (5%)
     modes = ['kernel', 'spectral']
     laplacian_methods = ['ratio', 'normalized']
 
@@ -520,9 +520,9 @@ To observe how well-separated the clusters are in the spectral embedding space (
 | **3 Clusters**          | Smooth curved embedding, good  | More compact but slightly sparse   |
 | **k-means++ vs Random** | Improves clarity               | Greatly improves density & balance |
 - The **eigenspace structure of Image1** is **strongly curved**, which makes spectral clustering ideal.
-    
+
 - **Normalized Laplacian** provides smoother embeddings.
-    
+
 - **Ratio Laplacian** benefits more from **k-means++**, especially at higher cluster counts.
 
 image2
@@ -546,9 +546,9 @@ image2
 | **k-means++ Effect** | Refines boundaries, improves clarity | Dramatically improves compactness & separation |
 
 - Image2’s spectral embeddings **form clear low-dimensional manifolds**.
-    
+
 - **Spectral Clustering (Ratio)** can match or exceed normalized performance when paired with **`k-means++`**.
-    
+
 - Choosing proper initialization is crucial when embeddings are **sparse or uneven**.
 <div style="page-break-after: always;"></div>
 ## 3. Observations and discussion (20%)
@@ -565,11 +565,11 @@ image2
 **K-Means++ Initialization**
 
 - Improved consistency across all methods.
-    
+
 - **Spectral Clustering (Normalized)** maintains the most visually stable and coherent segmentation.
-    
+
 - **Kernel K-Means** becomes noticeably better, with reduced noise and clearer regions.
-    
+
 Spectral Clustering (especially normalized) effectively captures global structures even with just two clusters. `k-means++` helps eliminate instability from random starts.
 
 ---
@@ -581,13 +581,13 @@ Spectral Clustering (especially normalized) effectively captures global structur
 - **Kernel K-Means**: More fragmentation observed. One region appears over-segmented.
 - **Spectral Clustering (Normalized)**: Provides distinguishable separation of three regions.
 - **Spectral Clustering (Ratio)**: Similar to normalized, though slightly less defined.
-    
+
  **K-Means++ Initialization**
 
 - Clear performance improvement in all methods.
 - **Spectral Clustering (Normalized)** shows the sharpest boundaries and consistent cluster shapes.
 - **Kernel K-Means** is more balanced than in the random case.
-    
+
 With more clusters, initialization plays a bigger role. Spectral Clustering retains robustness and interpretability.
 
 ---
@@ -605,7 +605,7 @@ With more clusters, initialization plays a bigger role. Spectral Clustering reta
 - **Spectral Clustering (Normalized)** shows a clear and meaningful 4-region split.
 - **Spectral (Ratio)** is still acceptable but slightly noisier.
 - **Kernel K-Means** improves compared to random, but cluster shapes are less smooth.
-    
+
 When the number of clusters increases, Spectral Clustering with normalization remains the most reliable. Kernel K-Means becomes less stable and more sensitive to initialization.
 
 #### image2
@@ -614,30 +614,30 @@ When the number of clusters increases, Spectral Clustering with normalization re
 Random Initialization
 
 - **Kernel K-Means**:
-    
+
     - Clean split with large uniform regions.
-        
+
     - Some subtle noise on boundaries.
-        
+
 - **Spectral Clustering (Normalized & Ratio)**:
-    
+
     - More sensitive to edge textures and finer details.
-        
+
     - Resulting segmentation includes scattered fragments.
-        
+
     - Ratio method appears slightly smoother than normalized.
-        
+
 K-Means++ Initialization
 
 - **Kernel K-Means**:
-    
+
     - Still clean and consistent; slightly more balanced than with random.
-        
+
 - **Spectral Clustering**:
-    
+
     - Still noisy in fine-textured regions, but more stable than random.
     - Both normalized and ratio produce very similar results.
-        
+
 Kernel K-Means is more spatially coherent under 2-cluster scenarios, while Spectral Clustering is more sensitive to local texture details. Initialization method does not heavily affect outcome at 2 clusters, but `k-means++` offers slightly cleaner results.
 
 ---
@@ -650,19 +650,19 @@ Random Initialization
 - **Spectral Clustering**:
     - Segment boundaries align more with texture transitions.
     - Noticeable patchiness, especially in normalized version.
-        
+
 
 K-Means++ Initialization
 
 - **Kernel K-Means**:
-    
+
     - Reduced patch noise, better-defined cluster shapes.
-        
+
 - **Spectral Clustering**:
 
-    - Less chaotic than random; smoother transitions.        
+    - Less chaotic than random; smoother transitions.
     - Normalized and ratio still differ slightly in region compactness.
-        
+
 With more clusters, the effect of initialization becomes more noticeable. Spectral methods capture more nuanced structures but are prone to over-segmentation without proper tuning.
 
 ---
@@ -672,28 +672,28 @@ With more clusters, the effect of initialization becomes more noticeable. Spectr
 Random Initialization
 
 - **Kernel K-Means**:
-    
+
     - Cluster regions look natural, but smaller details may be under-represented.
-        
+
 - **Spectral Clustering**:
-    
+
     - Both normalized and ratio highlight very fine-grained structures.
-        
+
     - More scattered pixel clusters, which might be undesirable for object-level segmentation.
-        
+
 
 K-Means++ Initialization
 
 - **Kernel K-Means**:
-    
+
     - Significantly improved — clearer separation and compact clusters.
-        
+
 - **Spectral Clustering**:
-    
+
     - Ratio version becomes more structured and readable.
-        
+
     - Normalized still prone to noise in textured regions, but better than random.
-        
+
 With higher cluster counts, `k-means++` is essential to stabilize the results. Spectral Clustering (Ratio) becomes more visually coherent than Normalized in high-cluster settings.
 
 ### Compare the execution time of different settings. (8%)
@@ -719,39 +719,39 @@ Observations
 1. **General Trends**
 
 - **Kernel K-Means** is significantly faster across all settings.
-    
+
 - **Spectral Clustering (Normalized)** is the slowest method, particularly for `2 clusters` and `k-means++`.
-    
+
 - **Spectral Clustering (Ratio)** lies between the two in terms of runtime, generally faster than normalized but slower than kernel k-means.
-    
+
 
 2. **Effect of Initialization Method**
 
 - **`k-means++` initialization** increases runtime slightly for **Kernel K-Means**, likely due to the additional computation of better-initialized centers.
-    
+
 - Surprisingly, for **Spectral Clustering**, `k-means++` slightly **reduces or stabilizes runtime** compared to random — likely because better initialization reduces k-means iterations after spectral embedding.
-    
+
 
 3. **Effect of Cluster Number**
 
 - For all methods, increasing the number of clusters does **not always linearly increase runtime**.
-    
+
     - **Kernel K-Means**: runtime fluctuates, e.g., `3 clusters` takes **less time** than `2 clusters` in the `random` setting — likely due to early convergence.
-        
+
     - **Spectral Clustering (Normalized)**: runtime increases with more clusters, especially in `k-means++`.
-        
+
     - **Spectral Clustering (Ratio)**: similar pattern but with smaller increases.
-        
+
 
 ---
 
 
 - **Kernel K-Means** is clearly the most efficient method, making it suitable for time-sensitive applications or larger images.
-    
+
 - **Spectral Clustering** methods, while slower, may offer better segmentation quality — a trade-off between accuracy and speed.
-    
+
 - Choosing `k-means++` may slightly increase cost for Kernel K-Means but improves convergence in Spectral Clustering.
-    
+
 - **Spectral Clustering (Ratio)** provides a good middle ground in terms of both **runtime** and **segmentation smoothness**.
 
 image2
@@ -777,11 +777,11 @@ Observations
 1. **Overall Performance**
 
 - **Kernel K-Means** is significantly faster than both spectral clustering variants in all configurations.
-    
+
 - **Spectral Clustering (Normalized)** has the highest runtime consistently (~196–210 seconds).
-    
+
 - **Spectral Clustering (Ratio)** performs slightly faster than normalized in most settings, especially under `random`.
-    
+
 
 ---
 
@@ -790,18 +790,18 @@ Observations
 #### Kernel K-Means:
 
 - **Unusual behavior**:
-    
+
     - `k-means++` is **faster** than `random` in `2 clusters`, but **slower** for `3 and 4 clusters`.
-        
+
     - This may be due to variability in early convergence behavior depending on initialization.
-        
+
 
 #### Spectral Clustering:
 
 - The choice between `random` and `k-means++` **has minimal impact** on execution time.
-    
+
     - This is expected, since most of the time is spent computing the Laplacian and its eigenvectors, not in k-means.
-        
+
 
 ---
 
@@ -810,25 +810,25 @@ Observations
 #### Kernel K-Means:
 
 - Runtime increases slightly with more clusters under `random`.
-    
+
 - Under `k-means++`, runtime spikes for `3 clusters` (44.16 sec) and drops again for `4 clusters` — possibly due to convergence complexity at `k=3`.
-    
+
 
 #### Spectral Clustering:
 
 - Both **Normalized** and **Ratio** variants maintain **stable runtime** across different cluster numbers.
-    
+
 - This shows that the **eigen-decomposition dominates** runtime and is not strongly affected by `k`.
-    
+
 
 ---
 
 - **Kernel K-Means** is extremely efficient on Image2, completing most runs under **45 seconds**.
-    
+
 - **Spectral Clustering** is significantly slower, taking **~3 to 10× longer**, regardless of initialization or cluster count.
-    
+
 - **Spectral (Ratio)** remains a viable trade-off between runtime and structure-aware segmentation.
-    
+
 - `k-means++` helps Kernel K-Means only in specific settings; for spectral methods, it has **negligible effect on time**.
 
 ### Anything you want to discuss. (4%)
@@ -852,13 +852,13 @@ Observations
 | 4 clusters | 33                     | 7                                | 4                           |
 
 - **Spectral Clustering** (both normalized and ratio) consistently converges **much faster** (mostly within 2–12 iterations) than **Kernel K-Means**, which often requires **10–40+ iterations**.
-    
+
 - **Normalized Spectral Clustering** is especially stable and predictable, showing **almost constant convergence** around 4–12 iterations regardless of `k`.
-    
+
 - **Kernel K-Means** is **more sensitive** to:
-    
+
     - the number of clusters (`k`)
-        
+
     - the initialization method (`k-means++` generally helps but not always)
 
 ---
@@ -882,15 +882,15 @@ image2
 | 4 clusters | 34                     | 10                               | 10                          |
 
 - **Spectral Clustering (Ratio)** shows **extreme sensitivity** to cluster number and initialization:
-    
+
     - It converges **very quickly** in some cases (e.g., 2 clusters, `k-means++`: 2 iterations),
-        
+
     - But can take **very long** in others (e.g., 4 clusters, `random`: 62 iterations).
-        
+
 - **Spectral Clustering (Normalized)** is generally more **stable** in convergence speed, mostly staying below 20 iterations.
-    
+
 - **Kernel K-Means** remains **variable**:
-    
+
     - `k-means++` sometimes reduces iterations (e.g., 2 clusters: from 11 → 8),
-        
+
     - But may also **increase** iteration count unexpectedly (e.g., 3 clusters: 13 → 41).
