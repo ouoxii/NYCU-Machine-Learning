@@ -231,11 +231,39 @@ def plot_pairwise_similarity_distribution(P, Q, method, perplexity):
     # plt.show()
 
 
+
+def save_gif(Y_frames, labels, method, perplexity):
+    output_dir = "./tsne_visualization"
+    os.makedirs(output_dir, exist_ok=True)
+    images = []
+    for Y in Y_frames:
+        fig, ax = plt.subplots(figsize=(6, 6))
+        scatter = ax.scatter(Y[:, 0], Y[:, 1], c=labels, cmap='tab10', s=10)
+        ax.set_title(f"{method} (iter={len(images)*10})")
+        ax.axis('off')
+        fig.canvas.draw()
+        image = np.frombuffer(fig.canvas.tostring_rgb(), dtype='uint8')
+        image = image.reshape(fig.canvas.get_width_height()[::-1] + (3,))
+        images.append(image)
+        plt.close()
+    gif_path = f"{output_dir}/{method}_perplexity_{int(perplexity)}.gif"
+    imageio.mimsave(gif_path, images, fps=5)
+
+
 if __name__ == "__main__":
     print("Run Y = tsne.tsne(X, no_dims, perplexity) to perform t-SNE on your dataset.")
     print("Running example on 2,500 MNIST digits...")
     X = np.loadtxt("mnist2500_X.txt")
     labels = np.loadtxt("mnist2500_labels.txt")
-    Y = tsne(X, 2, 50, 20.0)
-    pylab.scatter(Y[:, 0], Y[:, 1], 20, labels)
+    Y_tsne, frames_tsne = tsne(X, 2, 50, 20.0, symmetric_sne=False)
+    Y_sne, frames_sne = tsne(X, 2, 50, 20.0, symmetric_sne=True)
+
+    pylab.figure(figsize=(10, 5))
+    pylab.subplot(1, 2, 1)
+    pylab.scatter(Y_tsne[:, 0], Y_tsne[:, 1], 20, labels)
+    pylab.title("t-SNE projection")
+
+    pylab.subplot(1, 2, 2)
+    pylab.scatter(Y_sne[:, 0], Y_sne[:, 1], 20, labels)
+    pylab.title("Symmetric SNE projection")
     pylab.show()
