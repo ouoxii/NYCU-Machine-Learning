@@ -14,6 +14,10 @@
 
 import numpy as np
 import pylab
+import matplotlib.pyplot as plt
+import os
+import imageio.v2
+from matplotlib.ticker import ScalarFormatter, MaxNLocator
 
 
 def Hbeta(D=np.array([]), beta=1.0):
@@ -104,7 +108,7 @@ def pca(X=np.array([]), no_dims=50):
     return Y
 
 
-def tsne(X=np.array([]), no_dims=2, initial_dims=50, perplexity=30.0):
+def tsne(X=np.array([]), no_dims=2, initial_dims=50, perplexity=30.0, symmetric_sne=False):
     """
         Runs t-SNE on the dataset in the NxD array X to reduce its
         dimensionality to no_dims dimensions. The syntaxis of the function is
@@ -122,15 +126,17 @@ def tsne(X=np.array([]), no_dims=2, initial_dims=50, perplexity=30.0):
     # Initialize variables
     X = pca(X, initial_dims).real
     (n, d) = X.shape
-    max_iter = 1000
+    max_iter = 500
     initial_momentum = 0.5
     final_momentum = 0.8
     eta = 500
     min_gain = 0.01
+    np.random.seed(42)
     Y = np.random.randn(n, no_dims)
     dY = np.zeros((n, no_dims))
     iY = np.zeros((n, no_dims))
     gains = np.ones((n, no_dims))
+    Y_frames = []  # for visualization
 
     # Compute P-values
     P = x2p(X, 1e-5, perplexity)
@@ -145,7 +151,12 @@ def tsne(X=np.array([]), no_dims=2, initial_dims=50, perplexity=30.0):
         # Compute pairwise affinities
         sum_Y = np.sum(np.square(Y), 1)
         num = -2. * np.dot(Y, Y.T)
-        num = 1. / (1. + np.add(np.add(num, sum_Y).T, sum_Y))
+
+        if symmetric_sne:
+            num = np.exp(-np.add(np.add(num, sum_Y).T, sum_Y))  # modified from tsne to symmetric sne
+        else:
+            num = 1. / (1. + np.add(np.add(num, sum_Y).T, sum_Y))
+
         num[range(n), range(n)] = 0.
         Q = num / np.sum(num)
         Q = np.maximum(Q, 1e-12)
@@ -153,7 +164,10 @@ def tsne(X=np.array([]), no_dims=2, initial_dims=50, perplexity=30.0):
         # Compute gradient
         PQ = P - Q
         for i in range(n):
-            dY[i, :] = np.sum(np.tile(PQ[:, i] * num[:, i], (no_dims, 1)).T * (Y[i, :] - Y), 0)
+            if symmetric_sne:
+                dY[i, :] = np.sum(np.tile(PQ[:, i], (no_dims, 1)).T * (Y[i, :] - Y), 0)  # modified from tsne to symmetric sne
+            else:
+                dY[i, :] = np.sum(np.tile(PQ[:, i] * num[:, i], (no_dims, 1)).T * (Y[i, :] - Y), 0)
 
         # Perform the update
         if iter < 20:
@@ -171,13 +185,50 @@ def tsne(X=np.array([]), no_dims=2, initial_dims=50, perplexity=30.0):
         if (iter + 1) % 10 == 0:
             C = np.sum(P * np.log(P / Q))
             print("Iteration %d: error is %f" % (iter + 1, C))
+            Y_frames.append(Y.copy())
 
         # Stop lying about P-values
         if iter == 100:
             P = P / 4.
 
+    method = 'symmetric_sne' if symmetric_sne else 'tsne'
+    plot_pairwise_similarity_distribution(P, Q, method, perplexity)
+
     # Return solution
-    return Y
+    return Y, Y_frames
+
+
+
+def plot_pairwise_similarity_distribution(P, Q, method, perplexity):
+    output_dir = "./tsne_visualization"
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+
+    plt.figure(figsize=(12, 6))
+
+    # Plot P (high-dimensional space)
+    plt.subplot(1, 2, 1)
+    plt.hist(P.flatten(), bins=35, log=True, density=True)
+    plt.title(f"{method} High-dimensional space (P) with perplexity ", fontsize=12)
+    plt.xlabel('Pairwise Similarity')
+    plt.ylabel('Frequency (log scale in proportion)')
+    ax = plt.gca()
+    ax.xaxis.set_major_locator(MaxNLocator(nbins=6))
+    ax.xaxis.set_major_formatter(ScalarFormatter(useMathText=True))
+
+    # Plot Q (low-dimensional space)
+    plt.subplot(1, 2, 2)
+    plt.hist(Q.flatten(), bins=35, log=True, density=True)
+    plt.title(f"{method} Low-dimensional space (Q)", fontsize=12)
+    plt.xlabel('Pairwise Similarity')
+    plt.ylabel('Frequency (log scale in proportion)')
+    ax = plt.gca()
+    # ax.xaxis.set_major_locator(MaxNLocator(nbins=6))
+    ax.xaxis.set_major_formatter(ScalarFormatter(useMathText=True))
+
+    plt.tight_layout()
+    plt.savefig(f"{output_dir}/similarity_distribution_{method}_perplexity_{int(perplexity)}.png")
+    # plt.show()
 
 
 if __name__ == "__main__":
