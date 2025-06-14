@@ -53,7 +53,7 @@ def lda(X, y, num_components):
 Find a linear projection that **maximizes class separability** by maximizing the ratio of between-class scatter to within-class scatter.
 
 - Steps (Mathematical Formulation)
-- ![](Pasted image 20250615004547.png)
+- ![](./img/Pasted image 20250615004547.png)
 
 1. **Compute the global mean vector**:
 
@@ -175,15 +175,15 @@ Perform non-linear dimensionality reduction using the Kernel PCA method.
      $$ K_{ij} = (x_i^\top x_j + 1)^{\text{degree}} $$
 
 2. Center the kernel matrix:
-   $$ K_c = K - \mathbf{1}_N K - K \mathbf{1}_N + \mathbf{1}_N K \mathbf{1}_N $$
+   $$K_c = K - \mathbf{1}_N K - K \mathbf{1}_N + \mathbf{1}_N K \mathbf{1}_N$$
 
 3. Eigen decomposition of the centered kernel matrix:
-   $$ K_c \alpha = \lambda \alpha $$
+   $$K_c \alpha = \lambda \alpha$$
 
 4. Sort eigenvalues and select top n eigenvectors.
 
 5. Normalize eigenvectors (alphas):
-   $$ \alpha_i = \frac{\alpha_i}{\sqrt{\lambda_i}} $$
+   $$\alpha_i = \frac{\alpha_i}{\sqrt{\lambda_i}}$$
 
 6. Return the centered kernel and normalized projections.
 
