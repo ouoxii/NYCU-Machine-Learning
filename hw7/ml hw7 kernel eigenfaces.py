@@ -5,7 +5,23 @@ from PIL import Image
 import matplotlib.pyplot as plt
 from scipy.spatial.distance import pdist, squareform, cdist
 
-# === [1] 讀取 pgm 圖像資料 ===
+
+
+# === Custom distance computation (no scipy) ===
+def compute_pairwise_sq_dists(X):
+    sq_norms = np.sum(X ** 2, axis=1).reshape(-1, 1)
+    dists = sq_norms + sq_norms.T - 2 * np.dot(X, X.T)
+    np.fill_diagonal(dists, 0)
+    return dists
+
+def compute_cdist(A, B):
+    sqA = np.sum(A ** 2, axis=1).reshape(-1, 1)
+    sqB = np.sum(B ** 2, axis=1).reshape(1, -1)
+    dists = sqA + sqB - 2 * np.dot(A, B.T)
+    return np.sqrt(np.maximum(dists, 0))
+
+
+# === Data loading ===
 def read_pgm(folder, size=(64, 64)):
     images, labels, filenames = [], [], []
     for fname in sorted(os.listdir(folder)):
@@ -17,29 +33,27 @@ def read_pgm(folder, size=(64, 64)):
             filenames.append(fname)
     return np.array(images), labels, filenames, size[0], size[1]
 
-# === [2] PCA 實作 ===
-def pca_feature_space(X, n_components):
-    X_mean = np.mean(X, axis=0, keepdims=True)  # shape: (1, D)
-    X_centered = X - X_mean  # shape: (N, D)
 
-    # 計算 D x D 共變異矩陣
-    cov = np.cov(X_centered, rowvar=False)
-    eigvals, eigvecs = np.linalg.eigh(cov)
+# === PCA ===
+def pca(X, n_components):
+    mean_vector = np.mean(X, axis=0, keepdims=True)
+    X_centered = X - mean_vector
+    cov_small = X_centered @ X_centered.T / (X.shape[1] - 1)
+    vals, vecs = np.linalg.eigh(cov_small)
+    sorted_indices = np.argsort(vals)[::-1]
+    vecs = vecs[:, sorted_indices]
+    components = X_centered.T @ vecs
+    components = components[:, :n_components]
+    norms = np.linalg.norm(components, axis=0, keepdims=True)
+    components = components / norms
+    return components, mean_vector
 
-    # 取出前 n_components 個主成分（按 eigenvalue 降序排序）
-    idx = np.argsort(eigvals)[::-1]
-    eigvecs = eigvecs[:, idx[:n_components]]
 
-    # 投影矩陣：每列為一個 eigenface（D x n_components）
-    projection_matrix = eigvecs
-    return projection_matrix, X_mean
-
-# === [3] LDA 實作（需要 PCA 降維後再做）===
+# === LDA ===
 def lda(X, y, num_components):
     class_labels = list(set(y))
     mean_total = np.mean(X, axis=0)
     Sw, Sb = np.zeros((X.shape[1], X.shape[1])), np.zeros((X.shape[1], X.shape[1]))
-
     for c in class_labels:
         X_c = X[np.array(y) == c]
         mean_c = np.mean(X_c, axis=0)
@@ -47,11 +61,10 @@ def lda(X, y, num_components):
         n_c = X_c.shape[0]
         mean_diff = (mean_c - mean_total).reshape(-1, 1)
         Sb += n_c * mean_diff @ mean_diff.T
-
     eigvals, eigvecs = np.linalg.eig(np.linalg.pinv(Sw) @ Sb)
     idx = np.argsort(-np.abs(eigvals))[:num_components]
-    W = eigvecs[:, idx].real
-    return W
+    return eigvecs[:, idx].real
+
 
 
 
@@ -119,23 +132,11 @@ def knn_classifier(Z_train, y_train, Z_test, y_test, k=1):
     return acc
 
 
-# Read PGM function
-def read_pgm(folder, size=(64, 64)):
-    images, labels, filenames = [], [], []
-    for fname in sorted(os.listdir(folder)):
-        if fname.endswith(".pgm"):
-            path = os.path.join(folder, fname)
-            img = Image.open(path).convert('L').resize(size)
-            images.append(np.array(img).flatten())
-            labels.append(fname.split('.')[0])
-            filenames.append(fname)
-    return np.array(images), labels, filenames, size[0], size[1]
-
-# Kernel PCA
+# === Kernel PCA ===
 def kernel_pca(X, n_components, kernel='rbf', gamma=0.001, degree=3):
     N = X.shape[0]
     if kernel == 'rbf':
-        pairwise_sq_dists = squareform(pdist(X, 'sqeuclidean'))
+        pairwise_sq_dists = compute_pairwise_sq_dists(X)
         K = np.exp(-gamma * pairwise_sq_dists)
     elif kernel == 'poly':
         K = (X @ X.T + 1) ** degree
@@ -144,81 +145,61 @@ def kernel_pca(X, n_components, kernel='rbf', gamma=0.001, degree=3):
 
     one_n = np.ones((N, N)) / N
     K_centered = K - one_n @ K - K @ one_n + one_n @ K @ one_n
-
     eigvals, eigvecs = np.linalg.eigh(K_centered)
     idx = np.argsort(eigvals)[::-1]
     eigvals, eigvecs = eigvals[idx], eigvecs[:, idx]
-
     alphas = eigvecs[:, :n_components]
     lambdas = eigvals[:n_components]
-
     alphas = alphas / np.sqrt(lambdas + 1e-10)
     return K_centered, alphas
 
-# Kernel LDA (KFDA) - implementation
-
+# === Kernel LDA ===
 def kernel_lda(X, y, n_components, kernel='rbf', gamma=0.001, degree=3):
     N = X.shape[0]
     classes = list(set(y))
     y = np.array(y)
-
-    # === Step 1: Compute Gram matrix K ===
     if kernel == 'rbf':
-        pairwise_sq_dists = squareform(pdist(X, 'sqeuclidean'))
+        pairwise_sq_dists = compute_pairwise_sq_dists(X)
         K = np.exp(-gamma * pairwise_sq_dists)
     elif kernel == 'poly':
         K = (X @ X.T + 1) ** degree
     else:
         raise ValueError("Unsupported kernel")
-
-    # === Step 2: Center K ===
     one_n = np.ones((N, N)) / N
     K_centered = K - one_n @ K - K @ one_n + one_n @ K @ one_n
 
-    # === Step 3: Compute class means in feature space ===
-    N_c = []
-    M = []
+    N_c, M = [], []
     for cls in classes:
         idx = np.where(y == cls)[0]
         N_c.append(len(idx))
         K_c = K_centered[:, idx]
-        M.append(np.mean(K_c, axis=1, keepdims=True))  # mean vector in RKHS
-
+        M.append(np.mean(K_c, axis=1, keepdims=True))
     M = np.hstack(M)
     total_mean = np.mean(K_centered, axis=1, keepdims=True)
 
-    # === Step 4: Between-class scatter matrix S_b and within-class scatter S_w ===
-    Sb = np.zeros((N, N))
-    Sw = np.zeros((N, N))
+    Sb, Sw = np.zeros((N, N)), np.zeros((N, N))
     for i in range(len(classes)):
         mean_diff = M[:, [i]] - total_mean
         Sb += N_c[i] * (mean_diff @ mean_diff.T)
-
         idx = np.where(y == classes[i])[0]
         for j in idx:
             diff = K_centered[:, [j]] - M[:, [i]]
             Sw += diff @ diff.T
 
-    # === Step 5: Solve generalized eigenvalue problem ===
     eigvals, eigvecs = np.linalg.eig(np.linalg.pinv(Sw + 1e-6 * np.eye(N)) @ Sb)
     idx = np.argsort(-np.abs(eigvals))
     eigvecs = eigvecs[:, idx[:n_components]]
+    return (K_centered @ eigvecs).real
 
-    # projection matrix in dual space
-    return (K_centered @ eigvecs).real  # Z_train_klda
-
-
-
-# Kernel projection for test data
+# === Kernel Projection for Test ===
 def kernel_project(X_train, X_test, alphas, kernel='rbf', gamma=0.001, degree=3):
     if kernel == 'rbf':
-        pairwise_sq = cdist(X_test, X_train, 'sqeuclidean')
+        pairwise_sq = compute_cdist(X_test, X_train) ** 2
         K_test = np.exp(-gamma * pairwise_sq)
     elif kernel == 'poly':
         K_test = (X_test @ X_train.T + 1) ** degree
     else:
         raise ValueError("Unsupported kernel")
-
     return K_test @ alphas
 
 
@@ -278,16 +259,13 @@ def save_accuracy_table_as_image(df_result, filename='img/part2_accuracy_table.p
     plt.close()
 
 
-# kNN classifier
 def knn_classifier(Z_train, y_train, Z_test, y_test, k=1):
-    distances = cdist(Z_test, Z_train)
+    distances = compute_cdist(Z_test, Z_train)
     knn_idx = np.argsort(distances, axis=1)[:, :k]
     preds = []
-
     for i in range(Z_test.shape[0]):
         votes = [y_train[j] for j in knn_idx[i]]
         preds.append(max(set(votes), key=votes.count))
-
     acc = np.mean([p == t for p, t in zip(preds, y_test)])
     return acc
 
@@ -299,7 +277,7 @@ def evaluate_kernel_methods(X_train, X_test, y_train, y_test, n_components=25, k
         print(f"\n[Kernel PCA] Kernel = {kernel}")
         if kernel == 'linear':
             # Linear kernel PCA ≈ standard PCA
-            W_pca, X_mean = pca_feature_space(X_train, n_components)
+            W_pca, X_mean = pca(X_train, n_components)
             Z_train_kpca = (X_train - X_mean) @ W_pca
             Z_test_kpca = (X_test - X_mean) @ W_pca
         else:
@@ -315,7 +293,7 @@ def evaluate_kernel_methods(X_train, X_test, y_train, y_test, n_components=25, k
         print(f"\n[Kernel LDA] Kernel = {kernel}")
         if kernel == 'linear':
             # Linear LDA = standard LDA
-            W_pca, X_mean = pca_feature_space(X_train, 50)
+            W_pca, X_mean = pca(X_train, 50)
             X_train_pca = (X_train - X_mean) @ W_pca
             X_test_pca = (X_test - X_mean) @ W_pca
             W_lda = lda(X_train_pca, y_train, n_components)
@@ -385,7 +363,7 @@ if __name__ == "__main__":
 
     # === Part 1: PCA 特徵臉與重建 ===
     n_components = 25
-    W_pca, X_mean = pca_feature_space(X_train, n_components)
+    W_pca, X_mean = pca(X_train, n_components)
     show_eigenfaces(W_pca, h, w, title="First 25 eigenfaces")
 
 
