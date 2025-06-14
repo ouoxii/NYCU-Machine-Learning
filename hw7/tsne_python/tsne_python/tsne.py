@@ -197,6 +197,52 @@ def tsne(X=np.array([]), no_dims=2, initial_dims=50, perplexity=30.0, symmetric_
     # Return solution
     return Y, Y_frames
 
+def create_animation(Y_frames, labels, filename, symmetric_sne):
+    # Create the directory if it doesn't exist
+    output_dir = "./tsne_visualization"
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+
+    frames = []
+    fig, ax = plt.subplots(figsize=(8, 8), dpi=100)
+
+    unique_labels = np.unique(labels)
+    distinct_colors = ['#e6194B', '#3cb44b', '#4363d8', '#f58231', '#911eb4',
+                      '#42d4f4', '#f032e6', '#bfef45', '#fabed4', '#469990']
+    color_map = dict(zip(unique_labels, distinct_colors))
+
+    for i, Y in enumerate(Y_frames):
+        ax.clear()
+        for label in unique_labels:
+            mask = labels == label
+            ax.scatter(Y[mask, 0], Y[mask, 1], c=color_map[label],
+                      label=f'Class {int(label)}', alpha=0.6, s=20)
+
+        ax.set_title(f'Iteration {(i + 1) * 10}')
+
+        if symmetric_sne:
+            ax.set_xlim(-8, 8)
+            ax.set_ylim(-8, 8)
+
+        else:
+            ax.set_xlim(-80, 80)
+            ax.set_ylim(-80, 80)
+
+        fig.canvas.draw()
+
+        frame = np.array(fig.canvas.renderer.buffer_rgba())
+        frames.append(frame[:,:,:3])
+
+    gif_path = os.path.join(output_dir, filename)
+    imageio.v2.mimsave(gif_path, frames, loop=1, fps=5)
+    print("Optimization procedure shows in", gif_path)
+
+    # Save the final .png image
+    png_path = gif_path.replace('.gif', '.png')
+    plt.savefig(png_path, dpi=100, bbox_inches='tight')
+    plt.close()
+    print("The final result shows in", png_path)
+
 
 
 def plot_pairwise_similarity_distribution(P, Q, method, perplexity):
@@ -232,38 +278,116 @@ def plot_pairwise_similarity_distribution(P, Q, method, perplexity):
 
 
 
-def save_gif(Y_frames, labels, method, perplexity):
-    output_dir = "./tsne_visualization"
+def save_gif(Y_frames, labels, filename, output_dir="./tsne_visualization"):
+    import matplotlib.pyplot as plt
+    import imageio
     os.makedirs(output_dir, exist_ok=True)
-    images = []
-    for Y in Y_frames:
+
+    unique_labels = np.unique(labels)
+    colors = plt.cm.tab10(np.linspace(0, 1, len(unique_labels)))
+    frames = []
+
+    for i, Y in enumerate(Y_frames):
         fig, ax = plt.subplots(figsize=(6, 6))
-        scatter = ax.scatter(Y[:, 0], Y[:, 1], c=labels, cmap='tab10', s=10)
-        ax.set_title(f"{method} (iter={len(images)*10})")
+        for j, label in enumerate(unique_labels):
+            idx = labels == label
+            ax.scatter(Y[idx, 0], Y[idx, 1], s=10, c=colors[j].reshape(1, -1), label=f"Class {int(label)}")
+        ax.set_title(f"Iteration {(i + 1) * 10}")
         ax.axis('off')
         fig.canvas.draw()
         image = np.frombuffer(fig.canvas.tostring_rgb(), dtype='uint8')
         image = image.reshape(fig.canvas.get_width_height()[::-1] + (3,))
-        images.append(image)
-        plt.close()
-    gif_path = f"{output_dir}/{method}_perplexity_{int(perplexity)}.gif"
-    imageio.mimsave(gif_path, images, fps=5)
+        frames.append(image)
+        plt.close(fig)
+
+    gif_path = os.path.join(output_dir, filename)
+    imageio.mimsave(gif_path, frames, fps=5)
+    print(f"Saved animation: {gif_path}")
+
+
+def combine_similarity_distributions(perplexities):
+    output_dir = "./tsne_visualization"
+    os.makedirs(output_dir, exist_ok=True)
+
+    fig, axs = plt.subplots(len(perplexities), 2, figsize=(12, 4 * len(perplexities)))
+
+    for i, perp in enumerate(perplexities):
+        for method, sym_flag in [("t-SNE", False), ("Symmetric SNE", True)]:
+            Y, _ = tsne(X, 2, 50, perp, symmetric_sne=sym_flag)
+
+            P = x2p(X, perplexity=perp)
+            P = (P + P.T) / np.sum(P + P.T)
+
+            sum_Y = np.sum(np.square(Y), axis=1)
+            if sym_flag:
+                num = np.exp(-np.add(np.add(-2. * np.dot(Y, Y.T), sum_Y).T, sum_Y))
+            else:
+                num = 1. / (1. + np.add(np.add(-2. * np.dot(Y, Y.T), sum_Y).T, sum_Y))
+            np.fill_diagonal(num, 0)
+            Q = num / np.sum(num)
+            Q = np.maximum(Q, 1e-12)
+
+            col = 0 if not sym_flag else 1
+            ax = axs[i, col] if len(perplexities) > 1 else axs[col]
+            ax.hist(P.flatten(), bins=35, alpha=0.5, label='P (High-Dim)', log=True, density=True)
+            ax.hist(Q.flatten(), bins=35, alpha=0.5, label='Q (Low-Dim)', log=True, density=True)
+            ax.set_title(f"{method} (Perplexity={perp})")
+            ax.set_xlabel('Pairwise Similarity')
+            ax.set_ylabel('Density (log)')
+            ax.legend()
+
+    plt.tight_layout()
+    combined_path = os.path.join(output_dir, "combined_similarity_distributions.png")
+    plt.savefig(combined_path)
+    plt.close()
+    print(f"Saved combined similarity distribution plot: {combined_path}")
+
 
 
 if __name__ == "__main__":
-    print("Run Y = tsne.tsne(X, no_dims, perplexity) to perform t-SNE on your dataset.")
-    print("Running example on 2,500 MNIST digits...")
-    X = np.loadtxt("mnist2500_X.txt")
-    labels = np.loadtxt("mnist2500_labels.txt")
-    Y_tsne, frames_tsne = tsne(X, 2, 50, 20.0, symmetric_sne=False)
-    Y_sne, frames_sne = tsne(X, 2, 50, 20.0, symmetric_sne=True)
+    print("Running t-SNE and Symmetric SNE on 2,500 MNIST digits...")
+    X = np.loadtxt("./tsne_python/mnist2500_X.txt")
+    labels = np.loadtxt("./tsne_python/mnist2500_labels.txt")
 
-    pylab.figure(figsize=(10, 5))
-    pylab.subplot(1, 2, 1)
-    pylab.scatter(Y_tsne[:, 0], Y_tsne[:, 1], 20, labels)
-    pylab.title("t-SNE projection")
+    perplexities = [10, 20, 50, 100]
+    output_dir = "./tsne_visualization"
+    os.makedirs(output_dir, exist_ok=True)
 
-    pylab.subplot(1, 2, 2)
-    pylab.scatter(Y_sne[:, 0], Y_sne[:, 1], 20, labels)
-    pylab.title("Symmetric SNE projection")
-    pylab.show()
+    for perplexity in perplexities:
+        for method, symmetric_sne in [("tsne", False), ("symmetric_sne", True)]:
+            print(f"\n=== {method.upper()} with perplexity={perplexity} ===")
+
+            # Step 1: Run t-SNE or Symmetric SNE
+            Y, Y_frames = tsne(X, no_dims=2, initial_dims=50, perplexity=perplexity, symmetric_sne=symmetric_sne)
+
+            # Step 2: Save the 500-iteration result PNG
+            plt.figure(figsize=(6, 6))
+            for label in np.unique(labels):
+                idx = labels == label
+                plt.scatter(Y[idx, 0], Y[idx, 1], s=10, label=str(int(label)))
+            plt.title(f"{method.upper()} projection\nperplexity={perplexity}, iter=500")
+            plt.axis("off")
+            plt.tight_layout()
+            plt.savefig(os.path.join(output_dir, f"{method}_perplexity_{perplexity}.png"))
+            plt.close()
+
+            # Step 3: Save embedding animation as GIF
+            gif_filename = f"{method}_perplexity_{perplexity}.gif"
+            create_animation(Y_frames, labels, gif_filename, symmetric_sne)
+
+            # Step 4: Save P vs. Q pairwise similarity distribution
+            P = x2p(X, perplexity=perplexity)
+            P = (P + P.T) / np.sum(P + P.T)
+
+            sum_Y = np.sum(np.square(Y), axis=1)
+            if symmetric_sne:
+                num = np.exp(-np.add(np.add(-2. * np.dot(Y, Y.T), sum_Y).T, sum_Y))
+            else:
+                num = 1. / (1. + np.add(np.add(-2. * np.dot(Y, Y.T), sum_Y).T, sum_Y))
+            np.fill_diagonal(num, 0)
+            Q = num / np.sum(num)
+            Q = np.maximum(Q, 1e-12)
+
+            plot_pairwise_similarity_distribution(P, Q, method, perplexity)
+
+    print("\nAll visualizations completed.")
