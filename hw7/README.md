@@ -1,6 +1,3 @@
-1. <font color="#ff0000"> To run the `tsne.py` code, please execute the `tsne.py` file located in `./tsne_python/tsne_python`.</font>
-<font color="#ff0000">    </font>
-2. <font color="#ff0000">The GIF files are located in `./tsne_python/tsne_visualization`.</font>
 
 # A. Kernel Eigenfaces
 ## 1. Code with detailed explanations
@@ -25,12 +22,12 @@ def pca(X, n_components):
 
 Reduce the dimensionality of data while preserving as much variance as possible.
 
-1. Center the data :Subtract the mean vector from each data point so the data has zero mean.  
+1. Center the data :Subtract the mean vector from each data point so the data has zero mean.
 2. Compute the small covariance matrix ：When n_samples < n_features, compute:  $C = \frac{1}{d - 1} XX^T$
-3. Eigen decomposition：Solve the eigenvalue problem:    $C \vec{v} = \lambda \vec{v}$  
-4. Sort eigenvectors by eigenvalues (descending)  
-5. Project back to original space  
-6. Normalize the components 
+3. Eigen decomposition：Solve the eigenvalue problem:    $C \vec{v} = \lambda \vec{v}$
+4. Sort eigenvectors by eigenvalues (descending)
+5. Project back to original space
+6. Normalize the components
 
 ---
 
@@ -110,7 +107,7 @@ show_eigenfaces(W_pca, h, w, title="First 25 eigenfaces")`
 
 2. **Reconstruct 10 random training images using PCA:**
 ```python
-Z_train_pca = (X_train - X_mean) @ W_pca 
+Z_train_pca = (X_train - X_mean) @ W_pca
 X_train_rec = Z_train_pca @ W_pca.T + X_mean show_reconstruction(X_train, X_train_rec, h, w, fnames_train, title="10 reconstructed images from PCA")
 ```
 
@@ -172,9 +169,9 @@ def kernel_pca(X, n_components, kernel='rbf', gamma=0.001, degree=3):
 Perform non-linear dimensionality reduction using the Kernel PCA method.
 
 1. Compute the kernel (Gram) matrix K:
-   - If 'rbf' kernel:  
+   - If 'rbf' kernel:
      $$ K_{ij} = \exp(-\gamma \|x_i - x_j\|^2) $$
-   - If 'poly' kernel:  
+   - If 'poly' kernel:
      $$ K_{ij} = (x_i^\top x_j + 1)^{\text{degree}} $$
 
 2. Center the kernel matrix:
@@ -316,7 +313,7 @@ Project test data into the learned kernel space using the same kernel as trainin
    $$ Z_{\text{test}} = K_{\text{test}} \cdot \alpha $$
 
 - Apply **Kernel PCA** and **Kernel LDA** to capture nonlinear structure.
-- Try **linear**, **polynomial**, and **RBF** kernels    
+- Try **linear**, **polynomial**, and **RBF** kernels
 - Compare with standard PCA/LDA in terms of accuracy.
 
 1. **Apply Kernel PCA with RBF kernel:**
@@ -335,16 +332,16 @@ df_kernel_result = evaluate_kernel_methods( X_train, X_test, y_train, y_test, n_
 ## 2. Experiments and Discussion
 ### Part 1
 #### First 25 eigenfaces:
-![[first_25_eigenfaces.png]]
+![](./img/first_25_eigenfaces.png)
 These eigenfaces represent the principal components learned from the training data by PCA. Each one encodes directions of maximum variance in the data.
 #### First 25 fisherfaces:
-![[first_25_fisherfaces.png]]
+![](./img/first_25_fisherfaces.png)
 Fisherfaces are obtained by applying LDA after projecting data to PCA subspace (to ensure within-class scatter matrix is non-singular). They maximize class separability.
-#### 10 reconstructed images from PCA: 
-![[10_reconstructed_images_from_pca.png]]
+#### 10 reconstructed images from PCA:
+![](./img/10_reconstructed_images_from_pca.png)
 The original images (top) and their PCA reconstructions (bottom). PCA preserves general facial structure well due to capturing major variance directions.
 #### 10 reconstructed images from LDA:
-![[10_reconstructed_images_from_lda.png]]
+![](./img/10_reconstructed_images_from_lda.png)
 LDA reconstructions (bottom) are generally more blurred and class-average-like due to fewer available discriminative directions (at most $C - 1$, where $C = 40$).
 #### Discussion
 
@@ -352,42 +349,42 @@ LDA reconstructions (bottom) are generally more blurred and class-average-like d
 
     - **PCA** focuses on retaining global variance, leading to better reconstruction of individual face details.
     - **LDA** aims at maximizing inter-class separability, so its reconstruction is less precise but more class-discriminative.
-        
+
 - **Visualization**:
-    
+
     - Eigenfaces resemble shadows of typical face structures capturing lighting and pose variance.
     - Fisherfaces highlight discriminative features between subjects (e.g., glasses, face shapes).
-        
+
 - **Limitation**:
-    
+
     - LDA is constrained by number of classes (maximum $C - 1 = 39$ components).
     - PCA lacks class information, which can reduce performance in classification tasks.
 
 ### Part 2
 The hyperparameter k represents the number of nearest neighbors to be selected.
-![[part2_accuracy_table.png]]
+![](./img/part2_accuracy_table.png)
 #### Discussion
 
 - **Performance Comparison**:
-    
+
     - LDA consistently outperformed PCA across all tested $k$ values, showing stronger class separability.
-        
+
     - PCA reached its highest accuracy (90%) at $k=5$ and $k=7$, but performance dropped at $k=9$, possibly due to over-smoothing effects.
-        
+
     - LDA remained stable at 90% or higher, with peak accuracy at $k=3$.
-        
+
 - **Insights**:
-    
+
     - PCA captures global variance without considering class labels, which may lead to suboptimal recognition performance.
-        
+
     - LDA focuses on maximizing inter-class variance and minimizing intra-class variance, which enhances its classification power.
-        
+
     - LDA benefits more from a moderate $k$ (like $k=3$), while PCA performs best with a small-to-mid $k$ due to noise sensitivity.
 ### Part 3   (3%)
 part3_lda_kernel_accuracy
-![[part3_lda_kernel_accuracy.png]]
+![](./img/part3_lda_kernel_accuracy.png)
 part3_pca_kernel_accuracy
-![[part3_pca_kernel_accuracy.png]]
+![](./img/part3_pca_kernel_accuracy.png)
 k-Nearest Neighbors (Euclidean distance in the projected space)
 - Tested $k = 1, 3, 5, 7, 9$
 #####  Discussion
@@ -395,9 +392,9 @@ k-Nearest Neighbors (Euclidean distance in the projected space)
 #### 1. Kernel vs. Non-Kernel Methods
 
 - **Kernel LDA (with linear kernel)** achieved up to **96.67%** accuracy across several values of $k$, slightly higher than the best performance of **simple LDA** (93.33% at $k=3$). This shows that the kernelized version of LDA can enhance performance modestly in linearly separable settings.
-    
+
 - **Kernel PCA (linear kernel)** showed very similar results to **simple PCA**, achieving a maximum accuracy of **90.00%** at $k=5$ and $k=7$, indicating that linear projection is already sufficient for this dataset.
-    
+
 
  **Conclusion**: Kernelization slightly improves LDA but brings no additional benefit to PCA in this task.
 
@@ -406,19 +403,19 @@ k-Nearest Neighbors (Euclidean distance in the projected space)
 #### 2. Impact of Kernel Choice
 
 - The **linear kernel** consistently outperformed the other kernels:
-    
+
     - **Kernel LDA** (linear): ≥93.33% across all kkk
-        
+
     - **Kernel PCA** (linear): up to 90.00%
-        
+
 - Both **polynomial** and **RBF kernels** performed **very poorly** (≤16.67%) for both PCA and LDA. Possible reasons include:
-    
+
     - Severe overfitting in high-dimensional kernel space
-        
+
     - Inappropriate hyperparameter choices (e.g., $\gamma$, degree $d$)
-        
+
     - Limited training samples not sufficient for complex nonlinear mappings
-        
+
 
 **Conclusion**: The dataset is likely linearly separable, and nonlinear kernels are not suitable in this context without careful tuning.
 
@@ -427,17 +424,17 @@ k-Nearest Neighbors (Euclidean distance in the projected space)
 #### 3. Effect of $k$ in k-NN
 
 - **Kernel LDA (linear)**:
-    
+
     - Accuracy remained stable at **96.67%** for $k=1, 5, 7, 9$
-        
+
     - Robust to the choice of kkk
-        
+
 - **Kernel PCA (linear)**:
-    
+
     - Accuracy peaked at **90.00%** for $k=5$ and $k=7$
-        
+
     - Decreased to **80.00%** at $k=9$, indicating sensitivity to $k$
-        
+
 
 **Conclusion**: LDA-based projections are more robust to changes in $k$, while PCA-based projections are more sensitive and require careful $k$-selection.
 
@@ -454,20 +451,20 @@ Summary: PCA/LDA vs. Kernel PCA/LDA
 
 #### Key Observations:
 
-1. **Linear Kernel is Most Effective**:  
+1. **Linear Kernel is Most Effective**:
     Both Kernel PCA and Kernel LDA with a linear kernel performed the best among all methods. In particular, Kernel LDA (linear) achieved **96.67%**, outperforming simple LDA (93.33%) by a small but consistent margin.
-    
-2. **Nonlinear Kernels Performed Poorly**:  
+
+2. **Nonlinear Kernels Performed Poorly**:
     Polynomial and RBF kernels yielded extremely low accuracy (≤16.67%) in both PCA and LDA settings. This suggests that either:
-    
+
     - The data is already linearly separable,
     - The kernel parameters (like $\gamma$, degree $d$) were not well-tuned,
     - Or the dataset size is insufficient to train complex kernel models reliably.
-        
-3. **Supervised LDA Methods Are More Robust**:  
+
+3. **Supervised LDA Methods Are More Robust**:
     Compared to PCA, LDA-based methods (both simple and kernel) are more robust across different $k$values in k-NN and better leverage class-label information.
-    
-4. **Kernelization Helps LDA More Than PCA**:  
+
+4. **Kernelization Helps LDA More Than PCA**:
     Kernel LDA (linear) showed noticeable improvement over simple LDA, but Kernel PCA did not show improvement over simple PCA. This indicates that the kernel trick is more beneficial when combined with a supervised dimensionality reduction method.
 
 # B. t-SNE
@@ -475,7 +472,7 @@ Summary: PCA/LDA vs. Kernel PCA/LDA
 
 ### Part 1
 
-![[Pasted image 20250615005220.png]]
+![](./img/Pasted image 20250615005220.png)
 #### Symmetric SNE vs. t-SNE / Crowding Problem
 
 In **dimensionality reduction**, especially from high-D to 2D or 3D space, we encounter the **crowding problem**: When projecting high-dimensional data to low dimensions, it's hard to preserve all pairwise distances due to the limited space. Nearby points in high-D space cannot all be placed close to each other in low-D, leading to **neighborhood mismatch**.
@@ -535,7 +532,7 @@ imageio.v2.mimsave(gif_path, frames, loop=1, fps=5)
 
 ```
 
-Hyperparameters: 
+Hyperparameters:
 ```python
 no_dims = 2
 initial_dims = 50
@@ -608,10 +605,10 @@ The **crowding problem** occurs because the 2D space cannot preserve intermediat
 - Perplexity: 50
 - Iteration: 500
 
-![[tsne_perplexity_50.png]]
+![](./tsne_python/tsne_visualization/tsne_perplexity_50.png)
 - **t-SNE**: Clearer separation between clusters. Most digit classes form tight, well-separated groups in the low-dimensional space.
 
-![[symmetric_sne_perplexity_50.png]]
+![](./tsne_python/tsne_visualization/symmetric_sne_perplexity_50.png)
 - **Symmetric SNE**: Less separation compared to t-SNE. The clusters overlap more, especially in the central region of the plot, although general group structures are still observable.
 ### Part 3
 #### Symmetric SNE
@@ -619,20 +616,20 @@ The **crowding problem** occurs because the 2D space cannot preserve intermediat
 **Similarity distributions (perplexity = 50):**
 
 - High-dimensional space (P) vs. Low-dimensional space (Q)
-![[similarity_distribution_symmetric_sne_perplexity_50.png]]
+![](./tsne_python/tsne_visualization/similarity_distribution_symmetric_sne_perplexity_50.png)
 #### t-SNE
 
 **Similarity distributions (perplexity = 50):**
 
 - High-dimensional space (P) vs. Low-dimensional space (Q)
-![[similarity_distribution_tsne_perplexity_50.png]]
+![](./tsne_python/tsne_visualization/similarity_distribution_tsne_perplexity_50.png)
 - In both methods, similarity distributions are **heavily skewed**, with most pairwise similarities near zero.
-    
+
 - **t-SNE** emphasizes preserving local similarity, resulting in a sharper drop in low-dimensional similarities (Q).
-    
+
 - **Symmetric SNE** distributes similarity values more evenly, leading to less separation in the low-dimensional embedding.
 
-These differences directly reflect the methods' emphasis:  
+These differences directly reflect the methods' emphasis:
 t-SNE's use of a heavy-tailed Student-t kernel in low-dimensional space encourages more separation between clusters, whereas symmetric SNE maintains more conservative spacing.
 ### Part 4
 compare  the  effects  of  different  perplexity  values
@@ -641,9 +638,9 @@ compare  the  effects  of  different  perplexity  values
 
 | perplexity=10               | perplexity=20                |
 | --------------------------- | ---------------------------- |
-| ![[tsne_perplexity_10.png]] | ![[tsne_perplexity_20.png]]  |
+| ![](./tsne_python/tsne_visualization/tsne_perplexity_10.png) | ![](./tsne_python/tsne_visualization/tsne_perplexity_20.png)  |
 | perplexity=50               | perplexity=100               |
-| ![[tsne_perplexity_50.png]] | ![[tsne_perplexity_100.png]] |
+| ![](./tsne_python/tsne_visualization/tsne_perplexity_50.png) | ![](./tsne_python/tsne_visualization/tsne_perplexity_100.png) |
 
 | Perplexity | Description                                                                                                                           |
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------------- |
@@ -658,9 +655,9 @@ t-SNE is sensitive to perplexity. Smaller values preserve local neighborhoods be
 
 | perplexity=10                        | perplexity=20                         |
 | ------------------------------------ | ------------------------------------- |
-| ![[symmetric_sne_perplexity_10.png]] | ![[symmetric_sne_perplexity_20.png]]  |
+| ![](./tsne_python/tsne_visualization/symmetric_sne_perplexity_10.png) | ![](./tsne_python/tsne_visualization/symmetric_sne_perplexity_20.png)  |
 | perplexity=50                        | perplexity=100                        |
-| ![[symmetric_sne_perplexity_50.png]] | ![[symmetric_sne_perplexity_100.png]] |
+| ![](./tsne_python/tsne_visualization/symmetric_sne_perplexity_50.png) | ![](./tsne_python/tsne_visualization/symmetric_sne_perplexity_100.png) |
 
 | Perplexity | Description                                                                                                |
 | ---------- | ---------------------------------------------------------------------------------------------------------- |
@@ -674,9 +671,9 @@ Symmetric SNE does not benefit as much from changing perplexity compared to t-SN
 #### Summary
 
 - **t-SNE** is better at discovering and separating discrete clusters. A moderate **perplexity (20–50)** is ideal.
-    
+
 - **Symmetric SNE** emphasizes continuity and topology over separation. Larger perplexity compresses the embedding too tightly.
-    
+
 - **Choosing the right perplexity** is crucial for t-SNE, whereas symmetric SNE is relatively more robust to its variation but less interpretable for clustering tasks.
 
 #   C. Observations and Discussion (10%)
@@ -684,23 +681,23 @@ Symmetric SNE does not benefit as much from changing perplexity compared to t-SN
 ## Effect of Perplexity on Similarity Distributions (Symmetric SNE)
 
 To analyze the influence of perplexity on the similarity structures in symmetric SNE, I visualized both the high-dimensional pairwise similarities $P$ and the low-dimensional similarities $Q$ for four different perplexity values: 10, 20, 50, and 100. The corresponding plots are shown below:
-![[similarity_distribution_symmetric_sne_perplexity_10.png]]
+![](./tsne_python/tsne_visualization/similarity_distribution_symmetric_sne_perplexity_10.png)
 - **Figure S1.1** – Symmetric SNE Pairwise Similarity Distribution (perplexity=10)
-    ![[similarity_distribution_symmetric_sne_perplexity_20.png]]
+![](./tsne_python/tsne_visualization/similarity_distribution_symmetric_sne_perplexity_20.png)
 - **Figure S1.2** – Symmetric SNE Pairwise Similarity Distribution (perplexity=20)
-    ![[similarity_distribution_symmetric_sne_perplexity_50.png]]
+![](./tsne_python/tsne_visualization/similarity_distribution_symmetric_sne_perplexity_50.png)
 - **Figure S1.3** – Symmetric SNE Pairwise Similarity Distribution (perplexity=50)
-    ![[similarity_distribution_symmetric_sne_perplexity_100.png]]
+![](./tsne_python/tsne_visualization/similarity_distribution_symmetric_sne_perplexity_100.png)
 - **Figure S1.4** – Symmetric SNE Pairwise Similarity Distribution (perplexity=100)
-    
+
 ### 1: High-dimensional similarity $P$ becomes smoother as perplexity increases
 
 From the left-side plots in each figure (showing $P$), we can see that:
 
 - With **perplexity = 10**, the distribution of $P$ is sharp and highly concentrated near zero. This implies that the Gaussian kernel assigns high similarity to only a few nearest neighbors, emphasizing **local structures**.
-    
+
 - With **perplexity = 100**, the similarity scores are more spread out, assigning non-negligible similarity to many more points. This reflects an emphasis on **global neighborhood relationships**.
-    
+
 This behavior is consistent with the role of perplexity: it controls the effective number of neighbors used to compute conditional probabilities in the high-dimensional space.
 
 ---
@@ -710,9 +707,9 @@ This behavior is consistent with the role of perplexity: it controls the effecti
 The right-side plots in each figure (showing $Q$) exhibit the following behavior:
 
 - Regardless of perplexity, the $Q$ distribution has a very sharp peak near zero and a long tail.
-    
+
 - As **perplexity increases**, the tail becomes heavier, meaning the low-dimensional space tends to pull apart more points, even those that are not close in the original space.
-    
+
 
 This is due to the use of a **Student-t distribution** (with 1 degree of freedom) in symmetric SNE, which has heavier tails than a Gaussian and is used to mitigate the **crowding problem**.
 
@@ -725,9 +722,9 @@ The KL divergence minimized in symmetric SNE is:
 $\mathrm{KL}(P \,\|\, Q) = \sum_{i \ne j} P_{ij} \log \frac{P_{ij}}{Q_{ij}}$
 
 - If $P$ is very sharp while $Q$ is too flat (or vice versa), the divergence becomes large, leading to stronger gradients that push similar points closer together.
-    
+
 - At **high perplexity**, PPP becomes too uniform, and $Q$ cannot compensate due to dimensional constraints—resulting in points **crowding** in the low-dimensional space.
-    
+
 
 This effect can be clearly observed in the final embedding results where points tend to cluster toward the center when perplexity is large.
 
