@@ -53,7 +53,9 @@ def lda(X, y, num_components):
 Find a linear projection that **maximizes class separability** by maximizing the ratio of between-class scatter to within-class scatter.
 
 - Steps (Mathematical Formulation)
-- ![](./img/Pasted image 20250615004547.png)
+
+
+![](./img/Pasted image 20250615004547.png)
 
 1. **Compute the global mean vector**:
 
